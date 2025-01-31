@@ -1,0 +1,6 @@
+- name: Deploy to Kubernetes
+  hosts: k8s_master
+  become: yes
+  tasks:
+    - name: Apply Kubernetes Deployment
+      command: kubectl apply -f /home/ansible/k8s/deployment.yaml
