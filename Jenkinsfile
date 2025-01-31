@@ -2,34 +2,45 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "myapp:v1"
-        DOCKER_REGISTRY = "dockerhub_username/myapp"
+        IMAGE_NAME = "your-dockerhub-username/react-app:v1"
+        DOCKER_HUB_CREDENTIALS = "docker-hub-credentials"
     }
 
     stages {
         stage('Clone Repository') {
             steps {
-                git branch: 'main', url: 'https://github.com/username/repository.git'
+                git branch: 'main', url: 'https://github.com/your-username/my-react-app.git'
             }
         }
 
-        stage('Build and Test') {
+        stage('Install Dependencies') {
             steps {
-                sh 'mvn clean test'  // Modify for your tech stack (e.g., npm test, pytest, etc.)
+                sh 'npm install'
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                sh 'npm test -- --watchAll=false'
+            }
+        }
+
+        stage('Build React App') {
+            steps {
+                sh 'npm run build'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t $DOCKER_IMAGE .'
+                sh 'docker build -t $IMAGE_NAME .'
             }
         }
 
-        stage('Push Docker Image to Registry') {
+        stage('Push Docker Image') {
             steps {
-                withDockerRegistry([credentialsId: 'docker-hub-credentials', url: '']) {
-                    sh 'docker tag $DOCKER_IMAGE $DOCKER_REGISTRY'
-                    sh 'docker push $DOCKER_REGISTRY'
+                withDockerRegistry([credentialsId: "$DOCKER_HUB_CREDENTIALS", url: ""]) {
+                    sh 'docker push $IMAGE_NAME'
                 }
             }
         }
@@ -37,12 +48,6 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 sh 'kubectl apply -f k8s/deployment.yaml'
-            }
-        }
-
-        stage('Deploy using Ansible') {
-            steps {
-                sh 'ansible-playbook -i inventory deploy.yaml'
             }
         }
     }
