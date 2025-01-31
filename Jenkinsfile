@@ -9,7 +9,7 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git branch: 'main', url: 'https://github.com/your-username/my-react-app.git'
+                git branch: 'main', url: 'https://github.com/ankur0704/Devops_EMS_mainproject.git'
             }
         }
 
